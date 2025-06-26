@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"> <html style><!--
+ Page saved with SingleFile 
+ url: https://users.ece.utexas.edu/~patt/04s.382N/tutorial/verilog_manual.html 
+ saved date: Tue Sep 10 2024 19:46:47 GMT+0530 (India Standard Time)
+--><meta charset=utf-8>
+<meta name=GENERATOR content="Mozilla/4.51 [en] (X11; I; Linux 2.2.5-15smp i686) [Netscape]">
+<meta name=referrer content=no-referrer><link rel=canonical href=https://users.ece.utexas.edu/~patt/04s.382N/tutorial/verilog_manual.html><meta http-equiv=content-security-policy content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;"><style>img[src="data:,"],source[src="data:,"]{display:none!important}</style></head>
+<body>
+<center><b><font size=+3>EE382N Verilog Manual</font></b>
+<br><b><font size=+3>Y. N. Patt </font></b>
+<br><b><font size=+3>H. Kim, M. Qureshi TAs </font></b>
+<br><b><font size=+3>Department of Electrical and Computer Engineering</font></b>
+<br><b><font size=+3>The University of Texas at Austin</font></b>
+<br><b><font size=+3>Spring, 2004</font></b></center>
+<p><br>
+<br>
+<br>
+<br>
+<p><b><font size=+1>Table of Contents</font></b>
+<ol><a href=#1.%20Introduction>1. Introduction</a>
+<br><a href=#2.%20Syntax>2. Syntax</a>
+<br><a href=#3.%20Data%20Types>3. Data Types</a>
+<br><a href=#4.%20Module%20definitions%20and%20instances>4.
+Module definitions and instances</a>
+<br><a href=#5.%20Continuous%20assignments>5. Continuous
+assignments</a>
+<br><a href=#6.%20Procedural%20Assignments>6. Procedural
+Assignments</a>
+<br><a href=#7.%20Compiler%20Directives>7. Compiler Directives</a>
+<br><a href=#8.%20System%20Tasks%20and%20Functions>8. System
+Tasks and Functions</a>
+<br><a href=#9.%20Timing%20information>9. Timing information</a>
+<br><a href=#10.%20A%20complete%20TOP%20module>10. A complete
+TOP module</a>
+<br><a href=#11.%20Behavioral%20Verilog>11. Behavioral
+Verilog</a></ol>
+<p><br><a name="1. Introduction"></a><b><font size=+1>1. Introduction</font></b>
+<p>This semester, you will design your project using Verilog HDL, a hardware
+description language commonly used in industry.&nbsp; While behavioral
+Verilog can be used to describe designs at a high level of abstraction,
+you will design your processor at the gate level in order to quantify the
+complexity and timing requirements of your design.&nbsp; Hence you will
+use structural Verilog only.
+<p>You will be provided Verilog libraries containing modules that will
+be the basic building blocks for your design.&nbsp; These library parts
+include simple logic gates, registers, and memory modules, for example.&nbsp;
+While the library parts are designed behaviorally, they incorporate some
+timing information that will be used in your simulations.&nbsp; Using the
+class libraries ensures a uniform timing standard for everyone.
+<p>Structural Verilog allows designers to describe a digital system as
+a hierarchical interconnection of modules.&nbsp; The Verilog code for your
+project will consist only of module definitions and their instances, although
+you may decide to use some behavioral Verilog for debugging purposes.&nbsp;
+This manual will cover all aspects of the Verilog language that you will
+need to be familiar with.
+<br>&nbsp;
+<p><a name="2. Syntax"></a><b><font size=+1>2. Syntax</font></b>
+<p>Verilog uses a C-like syntax.&nbsp; It is case sensitive, and all keywords
+are in lower case letters.&nbsp; Declarations, assignments, and statements
+end with a semicolon.&nbsp; It also uses C-style comments:
+<p><tt>&nbsp;&nbsp;&nbsp; // comment to end of line</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; /* closed comment */</tt>
+<p>Numbers are represented as <tt>&lt;<i>number_of_bits</i>&gt;'&lt;<i>base</i>&gt;&lt;<i>number</i>&gt;</tt>,
+where<tt> <i>base</i> </tt>can be <tt>b</tt>, <tt>o</tt>, <tt>d</tt>, or
+<tt>h</tt>,
+for binary, octal, decimal, or hex, respectively.&nbsp; Some examples:
+<p><tt>&nbsp;&nbsp;&nbsp; 8'hFF&nbsp;&nbsp;&nbsp;&nbsp; //8-bit hex number</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 5'b101&nbsp;&nbsp;&nbsp; //5-bit binary number
+00101</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//decimal number 1.&nbsp; (decimal is the default base)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 3'o5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //3-bit octal
+number 5</tt>
+<br>&nbsp;
+<p><a name="3. Data Types"></a><b><font size=+1>3. Data Types</font></b>
+<p>The data types that you will use are&nbsp; <tt>reg </tt>(register) and
+<tt>wire</tt>.
+&nbsp;
+<tt>Wires</tt> cannot hold a value; they are used to connect modules of
+combinational logic.&nbsp; <tt>Regs</tt> are used to store values.&nbsp;
+Since <tt>regs</tt> keep state, a <tt>reg</tt> cannot be the output of
+combinational logic.
+<p><i>Note: The reg datatype is NOT what you use to make flip-flops and
+registers.&nbsp; When implemented at the structural level, flip-flops and
+registers are still made out of wires and logic gates or other modules,
+as you will see in the d-latch example in section 4.&nbsp; Regs are only
+used in behavioral Verilog.</i>
+<p>You can declare regs and wires as follows:
+<p><tt>&nbsp;&nbsp;&nbsp; reg a,b;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//two scalar registers</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; reg [0:7] Byte;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//8-bit vector, bit 0 is MSB</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; wire [31:0] Word;&nbsp;&nbsp;&nbsp; //32-bit
+vector, bit 31 is MSB</tt>
+<p>You can reference a subset of bits in a vector as <tt>Word[0]</tt> or
+<tt>Byte[3:0]</tt>,
+for example.
+<p>You can use braces for concatenating two or more signals, like this:
+<br><tt>&nbsp;&nbsp;&nbsp; {Word[7:0], Word[31:8]} </tt>is the 32-bit vector
+obtained by rotating <tt>Word</tt> to the right by one byte.
+<br><tt>&nbsp;&nbsp;&nbsp; {24'b0, Word[7:0]} </tt>is the 32-bit vector
+obtained by zero extending the first byte of <tt>Word</tt>.
+<br>You can specify repetition by putting a number before the opening brace,
+like this:
+<br><tt>&nbsp;&nbsp;&nbsp; 4{Byte[0]}</tt> is the same thing as <tt>{Byte[0],
+Byte[0], Byte[0], Byte[0]}</tt>.
+<br>&nbsp;
+<p>A 2-dimensional memory of type <tt>reg</tt> can be declared as follows:
+<br><tt>&nbsp;&nbsp;&nbsp; reg [7:0] memory [0:1023];</tt>
+<br>You can reference bytes of memory as <tt>memory[5]</tt>, for example.&nbsp;
+If you want to reference an individual bit, you must first copy the byte
+into another variable.
+<p>We are using 4-value logic; that is, each bit can take on one of four
+possible values:
+<br>&nbsp;&nbsp;&nbsp; <tt>0</tt>: logic 0
+<br>&nbsp;&nbsp;&nbsp; <tt>1</tt>: logic 1
+<br>&nbsp;&nbsp;&nbsp; <tt>z</tt>: high impedance (for tri-state driver
+output)
+<br>&nbsp;&nbsp;&nbsp; <tt>x</tt>: unknown or undefined.
+<br>&nbsp;
+<p><a name="4. Module definitions and instances"></a><b><font size=+1>4.
+Module definitions and instances</font></b>
+<p>The <b>module</b> is the basic logic entity in Verilog.
+<p>A <b>module definition</b> is delimited by the keywords <tt>module</tt>
+and <tt>endmodule</tt>, as shown in the example below.
+<p>The <b>module header</b> consists of the <tt>module</tt> keyword, the
+name of the module, and the port list in parenthesis, followed by a semicolon:
+<br><tt>module d_latch (d, q, qbar, wen);</tt>
+<p>Following the module header are the <b>port declarations</b>.&nbsp;
+Ports may be of type <tt>input</tt>, <tt>output</tt>, or <tt>inout</tt>,
+for input, output, or bidirectional ports.&nbsp; Ports may be either scalar
+or vector.&nbsp; The port names in the declarations do not have to occur
+in the same order as they did in the port list.
+<p>The body of the module (consisting of <tt>wire</tt> and <tt>reg </tt>declarations
+and module instances) follow the port declarations.
+<br>Here is an example of a module definition for a gated D-latch:
+<p><tt>//-----------------------------------------------------</tt>
+<p><tt>// GATED D LATCH</tt>
+<p><tt>//-----------------------------------------------------</tt>
+<p><tt>module d_latch (d, q, qbar, wen);</tt>
+<br><tt>&nbsp;&nbsp; input d, wen;</tt>
+<br><tt>&nbsp;&nbsp; output q, qbar;</tt>
+<p><tt>&nbsp;&nbsp; wire dbar, r, s;</tt>
+<p><tt>&nbsp;&nbsp; inv1$ inv1 (dbar, d);</tt>
+<br><tt>&nbsp;&nbsp; nand2$ nand1 (s, d, wen);</tt>
+<br><tt>&nbsp;&nbsp; nand2$ nand2 (r, dbar, wen);</tt>
+<p><tt>&nbsp;&nbsp; nand2$ nand3 (q, s, qbar);</tt>
+<br><tt>&nbsp;&nbsp; nand2$ nand4 (qbar, r, q);</tt>
+<p><tt>endmodule</tt>
+<p>In this example, there are 5 <b>module instances</b>.&nbsp; <tt>inv1$</tt>
+and <tt>nand2$</tt> (1-input inverter and 2-input nand gate) are modules
+that are defined in the class libraries.&nbsp; For both of these gates,
+the first port is the output of the gate, and the remaining ports are inputs.
+<p>A module instance consists of the module name followed by an instance
+identifier , port list, and semicolon.&nbsp; Several instantiations of
+the same type of module can be made in a list like this:
+<br><tt>&nbsp;&nbsp; nand2$ nand1 (s, d, wen),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nand2 (r,
+dbar, wen),</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nand3 (q,
+s, qbar),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nand4 (qbar,
+r, q);</tt>
+<p>When instantiating a module, you can omit ports from the port list.&nbsp;
+For example, if we wanted to instantiate <tt>d_latch</tt> in another module
+but did not care about the <tt>qbar</tt> output, we could instantiate it
+as follows:
+<br><tt>&nbsp;&nbsp;&nbsp; d_latch latch1 (din, q_out, , wen);</tt>
+<br>In this example, <tt>din</tt> and <tt>wen</tt> could be either wires,
+registers, or ports declared in the higher-level module, but <tt>q_out</tt>
+cannot be a register.
+<p>You should know that any undeclared identifiers are implicitly declared
+as scalar wires.&nbsp; So watch out for typos in your port lists.
+<br>&nbsp;
+<p><a name="5. Continuous assignments"></a><b><font size=+1>5. Continuous
+assignments (for wires)</font></b>
+<p><tt>assign</tt> can be used to tie two wires together or to continually
+assign a <i>behavioral</i> expression to a wire.&nbsp; Examples:
+<p><tt>wire a, b, c;</tt>
+<p><tt>assign a = b;</tt>
+<br><tt>assign c = ~b;&nbsp; //c is assigned to NOT b</tt>
+<p>With a continuous assignment, whenever the value of a variable on the
+right-hand side changes, the expression is re-evaluated and the value of
+the left-hand side is updated.&nbsp; The left-hand side of the assignment
+<i>must</i>
+be a wire.
+<br>&nbsp;
+<p><a name="6. Procedural Assignments"></a><b><font size=+1>6. Procedural
+Assignments (for regs)</font></b>
+<p><b>6.1 Initial</b>
+<p>You will use registers primarily in testing your code.&nbsp; Unlike
+wires, regs will hold a value until it is re-assigned.&nbsp; In other words,
+it maintains state.&nbsp; Delays, indicated by a number following a pound
+sign, can be used to specify an amount of time before the value held by
+the <tt>reg</tt> changes.&nbsp; Here is an example.
+<p><tt>reg [3:0] A;</tt>
+<br><tt>initial</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; begin</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; A = 4'hf;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; #10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//delay 10 time units</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; A = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; #10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//delay 10 time units</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; A = 4'h5;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; end&nbsp; //end initial description</tt>
+<p>This example makes procedural assignments to register A.&nbsp; Any code
+in a begin-end block following the <tt>initial</tt> keyword executes only
+once, starting at the beginning (time 0) of a simulation.&nbsp; The first
+assignment to register A is made at time 0.&nbsp; The <tt>#10 </tt>indicates
+a delay of 10 time units before the next assignments are made.&nbsp; <tt>A</tt>
+is set to 0 at time 10, and <tt>A</tt> is set to 5 at time 20.
+<p>An <tt>initial</tt> description may be used without a block delimited
+by <tt>begin</tt> and
+<tt>end</tt> if there is only one statement (see
+example in next section).
+<p>Note that your code can have multiple procedural assignments.&nbsp;
+If you have more than one <tt>initial</tt> block in your code, they will
+be executed concurrently.
+<br>&nbsp;
+<p><b>6.2 Always</b>
+<p><tt>Always </tt>descriptions will execute repeatedly throughout a simulation.&nbsp;
+To initialize and cycle a clock at 10 time units, you could do the following:
+<p><tt>reg clk;</tt>
+<p><tt>initial clk = 1'b0;</tt>
+<p><tt>always #5 clk = ~clk;&nbsp; //clock cycle is 10 ns</tt>
+<br>&nbsp;
+<p><b>6.3 Repeat</b>
+<p>The <tt>repeat</tt> statement can be used to specify how many times
+a begin-end block is executed.&nbsp; The block following the repeat statement
+is executed the number of times indicated by the expression in parenthesis
+following the <tt>block</tt> keyword.&nbsp; In the following example, the
+block is executed four times.&nbsp; Note that I added a time delay after
+the last statement in the block to avoid a race condition.
+<p><tt>reg [3:0] A;</tt>
+<br><tt>initial</tt>
+<br><tt>begin</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; repeat(4)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; begin</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A = 4'hf;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//delay 10 time units</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//delay 10 time units</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A = 4'h5;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+//delay 10 time units</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end&nbsp; //end repeat(4)</tt>
+<p><tt>end //initial description</tt>
+<br>&nbsp;
+<p><a name="7. Compiler Directives"></a><b><font size=+1>7. Compiler Directives</font></b>
+<p>You can use an accent grave (<tt>`</tt>) followed by a keyword to control
+compilation and simulation.&nbsp; The compiler directive is <i>not</i>
+followed by a semicolon.
+<br>&nbsp;
+<p><b>7.1 <tt>`define</tt></b>
+<p>The <tt>define</tt> keyword can be used for making text macros.&nbsp;
+During compilation, when the macro name is preceded by an accent grave,
+the compiler substitutes the macro text.&nbsp; Here are a couple of examples:
+<p><tt>reg clk;</tt>
+<br><tt>reg [1:0] a;</tt>
+<p><tt>`define half_cycle 5</tt>
+<br><tt>`define set_a #10 a = 2'b</tt>
+<p><tt>always #(`half_cycle) clk = ~clk;</tt>
+<p><tt>initial</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; begin</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; clk = 1'b0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; `set_a 00;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; `set_a 01;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; `set_a 10;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; `set_a 11;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; end&nbsp;&nbsp;&nbsp; //initial begin</tt>
+<p>In the example above, the value of register <tt>a</tt> is changed every
+clock cycle.
+<br>&nbsp;
+<p><b>7.2 <tt>`include</tt></b>
+<p>This is used to include more source files.
+<p><tt>`include "file.v"</tt>
+<br>&nbsp;
+<p><a name="8. System Tasks and Functions"></a><b><font size=+1>8. System
+Tasks and Functions</font></b>
+<p>System tasks are commands built into the simulator.&nbsp; The system
+task calls end with a semicolon.&nbsp; You may find some of these useful:
+<br>&nbsp;
+<p><b>8.1 $finish</b>
+<p>Use <tt>$finish</tt> to end the simulation after a specified amount
+of time.&nbsp; Example:
+<p><tt>initial #1000 $finish;</tt>
+<p>Stops the simulation after 1000 time units.&nbsp;&nbsp; Unless you are
+stepping through the simulation interactively using VirSim, you will need
+to use <tt>$finish</tt>.
+<br>&nbsp;
+<p><b>8.2 $time</b>
+<p>Returns the current simulation time.
+<br>&nbsp;
+<p><b>8.3 $strobe</b>
+<p>Use <tt>$strobe</tt> to display a message on your screen.&nbsp; The
+format is similar to that of <tt>printf</tt> in C.&nbsp; Note that if the
+<tt>$strobe</tt>
+command is called at the same simulation time that other registers or wires
+are changing values, the value changes will happen <i>before</i> the strobe
+command is executed.&nbsp; Example:
+<p><tt>always @(posedge clk)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; $strobe ("at time %0d, a = %b", $time, a);</tt>
+<p>This statement is executed every&nbsp; time <tt>clk </tt>transitions
+from 0 to 1, printing the simulation time in decimal and the value of <tt>a</tt>
+in binary.&nbsp; If <tt>a</tt> changed right at the clock edge, the new
+value would be printed.
+<br>&nbsp;
+<p><b>8.4 $readmemb </b>and<b> $readmemh</b>
+<p>These are used for reading in data from a file of binary or hex numbers
+to initialize a memory module.&nbsp;&nbsp; You can use it like this:
+<p><tt>initial</tt>
+<br><tt>begin</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; $readmemb("<i>filename</i>",<i>instance_name</i>.mem,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<i>starting_address</i>);</tt>
+<br><tt>end</tt>
+<p><i><tt>starting_address</tt></i> is the address of the memory module
+where you begin initialization.&nbsp; If <i><tt>starting_address</tt></i>
+is greater than zero, the memory locations at the beginning will remain
+unitialized (logic value <tt>x</tt>).&nbsp; The data file is just a text
+file that contains a list of binary or hex numbers.&nbsp; An example of
+a data file will be given later in the semester.
+<br>&nbsp;
+<p><b>8.5 Dumping waveforms <i>(for creating a waveform file in text format
+using VCS)</i></b>
+<p><tt>$dumpfile</tt> is used to specify the name of the waveform file.
+<br><tt>&nbsp;&nbsp;&nbsp; $dumpfile ("file.dump");</tt>
+<p><tt>$dumpvars</tt> specifies the wires and registers whose values you
+want to record.&nbsp;&nbsp;&nbsp; The syntax is
+<br><tt>&nbsp;&nbsp;&nbsp; $dumpvars (<i>number_of_levels</i>, <i>instance_name</i>);</tt>
+<br>If <i>number_of_levels</i> is 1, it will dump all the signals instantiated
+in the top level of the instance specified.&nbsp; If <i>number_of_levels</i>
+is greater than 1, it will dump all signals instantiated <i>number_of_levels</i>
+levels hierarchically below the specified instance.&nbsp; If <i>number_of_levels</i>
+is 0, it will dump ALL signals instantiated under <i>instance_name</i>
+at any level.&nbsp;&nbsp; In the examples below, suppose you have an instance
+called <tt>reg_file</tt> in an instance called <tt>data_path</tt> in an
+instance called <tt>exec_core</tt> in your TOP module.
+<p><tt>$dumpvars (0, TOP.exec_core.data_path.reg_file);</tt>
+<br><tt>$dumpvars (2, TOP.exec_core);</tt>
+<p>The first statement will dump all wires and registers instantiated at
+any level under the module called <tt>reg_file</tt>.
+<br>The second statement will dump all wires and registers instantiated
+in the top level of <tt>exec_core, </tt>and the top level of <tt>data_path,
+</tt>or any other modules instantiated in
+<tt>exec_core</tt>.
+<br>&nbsp;
+<p><a name="9. Timing information"></a><b><font size=+1>9. Timing information</font></b>
+<p>You will need to examine the library files to figure out the timing
+delays of the library modules.&nbsp; Below is an example of a module from
+the library.&nbsp; The delays between the rise or fall of any input and
+the change of the output are specified.&nbsp;&nbsp; Two sets of three numbers
+are specified for each input.&nbsp; The first set are the minimum, typical,
+and maximum delays when the output transitions from 0 to 1.&nbsp; The second
+set are the delays when the output transitions from 1 to 0.&nbsp; For this
+module, the delays are the same regardless of which way the inputs are
+changing.
+<p>In this class we will always use the typical delays, so you need only
+use the middle number (0.2 in this case for both rise and fall times) when
+making your critical path and cycle time calculations.
+<p><tt>module&nbsp; nand2$(out, in0, in1);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input&nbsp;&nbsp; in0,
+in1;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; output&nbsp; out;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nand (out, in0, in1);</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; specify</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(in0 *&gt; out) = (0.18:0.2:0.22, 0.18:0.2:0.22);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(in1 *&gt; out) = (0.18:0.2:0.22, 0.18:0.2:0.22);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; endspecify</tt>
+<br><tt>endmodule</tt>
+<p><a name="10. A complete TOP module"></a>
+<br><b><font size=+1>10. A complete TOP module</font></b>
+<p><a href=https://users.ece.utexas.edu/~patt/04s.382N/tutorial/d_latch.v>Here</a> is a small example of a complete program
+illustrating use of the d-latch.&nbsp; You can read the&nbsp; <a href=https://users.ece.utexas.edu/~patt/04s.382N/tutorial/vcs_manual.html>EE382N
+Tools Tutorial</a> to learn how to simulate this.&nbsp; When simulated,
+it will dump a waveform file of all signals instantiated under TOP.&nbsp; It will also print any transitions of the<tt> d </tt>register to standard output. 
+<p><a name="11. Behavioral Verilog"></a>
+<br><b><font size=+1>11. Structural vs. Behavioral Verilog</font></b>
+<p>To clarify the difference between structural and behavioral verilog:
+<br>Structural verilog is composed of module instances and their interconnections
+(by wires) only.&nbsp; The use of regs, explicit time delays, arithmetic
+expressions, procedural assignments, or other verilog control flow structures
+are considered behavioral verilog.
+<p>As stated earlier, your project code will consist primarily of structural
+verilog.&nbsp; <i>You will use behavioral statements for debugging purposes
+only.&nbsp;</i> In fact, you will probably only instantiate two
+<tt>regs</tt>
+in your whole design: one for the clock and one for a RESET signal that
+is asserted at the beginning of your simulation.
+<p>This section has described all of the Verilog functionality you will
+need for your final project.&nbsp;&nbsp; If you want more information on
+behavioral Verilog, try reading the <a href=http://www.eg.bucknell.edu/~cs320/1995-fall/verilog-manual.html>Bucknell
+CSCI Verilog Manual</a> or the verilog manual at <a href=http://www.ee.ed.ac.uk/~gerard/Teach/Verilog/manual/index.html>The
+University of Edinburgh</a>.
+<p>
+<hr>
+MDB created Spring 2000<br>
+updated 20-Jan-2004<br>

@@ -1,0 +1,2 @@
+CLA16bit  = 5.804ns
+RCA16bit  = 5.816ns
